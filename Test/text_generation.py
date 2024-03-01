@@ -24,7 +24,7 @@ from transformers import (
 
 from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig
 
-from Test.modify_llama_test import convert_kvcache_llama, LlamaAttention_kvcache
+#from Test.modify_llama_test import convert_kvcache_llama, LlamaAttention_kvcache
 
 logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
@@ -61,11 +61,11 @@ def set_seed(args):
         torch.cuda.manual_seed_all(args.seed)
 
 
-ENABLE_Heavy_Hitter_FUNCTIONS = {
-    "llama": convert_kvcache_llama,
-    #"opt": convert_kvcache_opt_heavy_recent,
-    #"gpt_neox": convert_kvcache_gpt_neox_heavy_recent,
-}
+# ENABLE_Heavy_Hitter_FUNCTIONS = {
+#     "llama": convert_kvcache_llama,
+#     #"opt": convert_kvcache_opt_heavy_recent,
+#     #"gpt_neox": convert_kvcache_gpt_neox_heavy_recent,
+# }
 
 def main():
     parser = argparse.ArgumentParser()
@@ -85,7 +85,8 @@ def main():
     )
     args = parser.parse_args()
     args.device = torch.device("cuda" if torch.cuda.is_available() and not args.no_cuda else "cpu")
-    args.n_gpu = 0 if args.no_cuda else torch.cuda.device_count()
+    #args.n_gpu = 0 if args.no_cuda else torch.cuda.device_count()
+    args.n_gpu = 2
     logger.warning(f"device: {args.device}, n_gpu: {args.n_gpu}, 16-bits training: {args.fp16}")
     set_seed(args)
     prompt_text = 'In a small, bustling cafe nestled in the heart of a vibrant city, a serendipitous event unfolded, leaving a lasting impression on all who witnessed it. As the patrons sat sipping their coffees and engaging in animated conversations, a talented street musician entered the cafe, carrying a weathered guitar and radiating an aura of creativity.'
@@ -103,16 +104,16 @@ def main():
     print(result)
     
     
-    ######### Enable HH
-    checkpoint = copy.deepcopy(model.state_dict())
-    model = ENABLE_Heavy_Hitter_FUNCTIONS[args.model_arch](model, config)
-    model.load_state_dict(checkpoint)
-    model.half().eval().cuda()
+    # ######### Enable HH
+    # checkpoint = copy.deepcopy(model.state_dict())
+    # model = ENABLE_Heavy_Hitter_FUNCTIONS[args.model_arch](model, config)
+    # model.load_state_dict(checkpoint)
+    # model.half().eval().cuda()
     
-    generate_ids_hh = model.generate(input_ids, max_new_tokens=args.length)
-    result_hh = tokenizer.batch_decode(generate_ids_hh, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
-    print("################## Generated Context with Heavy Hitter Oracle ###################")
-    print(result_hh)
+    # generate_ids_hh = model.generate(input_ids, max_new_tokens=args.length)
+    # result_hh = tokenizer.batch_decode(generate_ids_hh, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
+    # print("################## Generated Context with Heavy Hitter Oracle ###################")
+    # print(result_hh)
     
 if __name__ == "__main__":
     main()
